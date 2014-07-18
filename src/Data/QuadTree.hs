@@ -178,19 +178,21 @@ insertWith :: (Ord x, Fractional x)
            -> a                -- ^ Value to insert
            -> QuadTree x a     -- ^ Quad tree to insert into
            -> Maybe (QuadTree x a) -- ^ @Nothing@ if point not covered by tree
-insertWith combine x a (Leaf children box)
-  | box `Box.contains` x =
-      let children' =
-            case extract x children of
-              Just (y, children') -> Pair x (combine y a) : children'
-              Nothing             -> Pair x a : children
-      in Just $ subdivideIfNeeded $ Leaf children' box
-  | otherwise = Nothing
-insertWith combine x a (Node quads box) =
-  let fromJust = fromMaybe (error "insert: Uh oh")
-      quads' = withQuadrantFor x box
-                 (\l -> quads & l %~ fromJust . insertWith combine x a)
-  in fmap (\q->Node q box) quads'
+insertWith combine x a qt = go qt
+  where
+    go (Leaf children box)
+      | box `Box.contains` x =
+          let children' =
+                case extract x children of
+                  Just (y, children') -> Pair x (combine y a) : children'
+                  Nothing             -> Pair x a : children
+          in Just $ subdivideIfNeeded $ Leaf children' box
+      | otherwise = Nothing
+    go (Node quads box) =
+      let fromJust = fromMaybe (error "insert: Uh oh")
+          quads' = withQuadrantFor x box
+                     (\l -> quads & l %~ fromJust . insertWith combine x a)
+      in fmap (\q->Node q box) quads'
 
 -- | Insert a point into a quadtree
 insert :: (Ord x, Fractional x)
