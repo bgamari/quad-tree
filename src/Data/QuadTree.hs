@@ -17,16 +17,18 @@ module Data.QuadTree
     , QuadTree
     , qBox
     , newWithBB
-    , lookupNearest
+    , lookup
     , size
     , insert
     , toPoints
     ) where
-    
+
+import Prelude hiding (lookup)
 import Data.Maybe (fromMaybe)
 import Data.Foldable as F
 import Data.Traversable as T
 import Control.Applicative
+import Control.Monad (join)
 
 import Control.Lens hiding (children)
 import Linear
@@ -92,11 +94,15 @@ instance Functor (QuadTree x) where
 newWithBB :: Box x -> QuadTree x a
 newWithBB bb = Leaf [] bb
 
--- | Find the nearest point in a quadtree
-lookupNearest :: (Num x, Ord x) => Point V2 x -> QuadTree x a -> Maybe a
-lookupNearest x n@(Node {})
-    | not $ (n ^. qBox) `Box.contains` x = Nothing
-    | otherwise = undefined
+-- | Find a point in a quadtree
+lookup :: (Fractional x, Ord x, Eq x)
+              => Point V2 x -> QuadTree x a -> Maybe a
+lookup x (Leaf points _) =
+    lookupPair x points
+lookup x (Node quads box)
+    | not $ box `Box.contains` x = Nothing
+    | otherwise = join $ withQuadrantFor x box $ \l->
+        lookup x (quads ^. l)
 
 -- | Evaluate the given function with a lens pointing to the quadrant
 -- containing the given point (or @Nothing@ if the point is not contained
