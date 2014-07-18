@@ -36,11 +36,12 @@ import           Data.QuadTree.Types
 import qualified Data.QuadTree.Box as Box
 import           Data.QuadTree.Box (Box (Box))
 
-
+-- | Either positive or negative
 data Sign = Plus | Minus
           deriving (Read, Show, Ord, Eq)
 makePrisms ''Sign
 
+-- | Multiply by a sign
 multBy :: Num a => a -> Sign -> a
 multBy a Plus  =  a
 multBy a Minus = -a
