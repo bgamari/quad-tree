@@ -11,12 +11,12 @@ module Data.QuadTree
     ( Pair(..)
       -- * Quad tree type
     , QuadTree
-    , qBox
       -- * Creating and populating quad trees
     , newWithBB
     , insert
     , insertWith
       -- * Querying quad trees
+    , boundingBox
     , lookup
     , size
     , toPoints
@@ -205,3 +205,7 @@ insert x a qt = insertWith (const id) x a qt
 toPoints :: QuadTree x a -> [Pair (Point V2 x) a]
 toPoints (Leaf pts _) = pts
 toPoints (Node quads _) = F.concat $ F.toList $ fmap toPoints quads
+
+-- | The bounding box of a quad tree
+boundingBox :: QuadTree x a -> Box x
+boundingBox qt = qt ^. qBox

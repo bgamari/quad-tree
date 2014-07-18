@@ -49,7 +49,7 @@ quadTree = prism' from_ to_
   where
     from_ qt
       | [] <- pts   = EmptyPoints
-      | p:ps <- pts = BoundedPoints (qt ^. QT.qBox) (p :| ps)
+      | p:ps <- pts = BoundedPoints (QT.boundingBox qt) (p :| ps)
       -- GHC complains about non-exhaustive match above
       | otherwise   = error "quadTree: ghc wut?"
       where pts = QT.toPoints qt
