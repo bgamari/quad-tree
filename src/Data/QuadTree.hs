@@ -160,8 +160,9 @@ insert x a (Leaf children box)
   | box `Box.contains` x = Just $ subdivideIfNeeded $ Leaf (Pair x a:children) box
   | otherwise = Nothing
 insert x a (Node quads box) =
-  let quads' = withQuadrantFor x box
-                 (\l -> quads & l %~  fromMaybe (error "insert: Uh oh") . insert x a)
+  let fromJust = fromMaybe (error "insert: Uh oh")
+      quads' = withQuadrantFor x box
+                 (\l -> quads & l %~ fromJust . insert x a)
   in fmap (\q->Node q box) quads'
 
 -- | Return the list of points contained in the quad tree
