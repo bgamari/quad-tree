@@ -146,6 +146,7 @@ size :: QuadTree x a -> Int
 size (Leaf pts _) = length pts
 size (Node quads _) = F.sum $ fmap size quads
 
+-- | Subdivide a leaf if larger than @maxLeafSize@
 subdivideIfNeeded :: (Ord x, Fractional x)
                   => QuadTree x a -> QuadTree x a
 subdivideIfNeeded qt@(Leaf {})
