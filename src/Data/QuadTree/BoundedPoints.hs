@@ -42,10 +42,10 @@ instance (Ord x, Fractional x) => Monoid (BoundedPoints x a) where
 singleton :: Num x => Point V2 x -> a -> BoundedPoints x a
 singleton x a = BoundedPoints (Box.singleton x) (Pair x a :| [])
 
--- | Isomorphism between a bounded list of points and a quad tree
+-- | Morphism between a bounded list of points and a quad tree
 quadTree :: (Ord x, Fractional x)
-         => Iso' (BoundedPoints x a) (QT.QuadTree x a)
-quadTree = iso to_ from_
+         => Prism' (BoundedPoints x a) (QT.QuadTree x a)
+quadTree = prism' from_ to_
   where
     from_ qt
       | [] <- pts   = EmptyPoints
@@ -53,7 +53,8 @@ quadTree = iso to_ from_
       -- GHC complains about non-exhaustive match above
       | otherwise   = error "quadTree: ghc wut?"
       where pts = QT.toPoints qt
-    to_ (BoundedPoints box pts) =
+    to_ EmptyPoints = Nothing
+    to_ (BoundedPoints box pts) = Just $
       foldl' (\qt (Pair x a) -> fromJust $ QT.insert x a qt)
         (QT.newWithBB box) (F.toList pts)
       where
