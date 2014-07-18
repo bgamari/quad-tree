@@ -20,6 +20,7 @@ module Data.QuadTree
     , lookup
     , size
     , insert
+    , insertWith
     , toPoints
     ) where
 
@@ -162,17 +163,42 @@ subdivideIfNeeded qt@(Leaf {})
   | size qt > maxLeafSize = subdivide qt
 subdivideIfNeeded qt = qt
 
--- | Insert a point into a quadtree
-insert :: (Ord x, Fractional x)
-       => Point V2 x -> a -> QuadTree x a -> Maybe (QuadTree x a)
-insert x a (Leaf children box)
-  | box `Box.contains` x = Just $ subdivideIfNeeded $ Leaf (Pair x a:children) box
+extract :: Eq a => a -> [Pair a b] -> Maybe (b, [Pair a b])
+extract a xs = go [] xs
+  where
+    go prefix (Pair x y:rest)
+      | a == x    = Just (y, prefix++rest)
+      | otherwise = go (Pair x y : prefix) rest
+    go _ [] = Nothing
+
+-- | Insert a point into a quadtree combining with existing point if necessary
+insertWith :: (Ord x, Fractional x)
+           => (a -> a -> a)    -- ^ Combining function
+           -> Point V2 x       -- ^ Point at which to insert
+           -> a                -- ^ Value to insert
+           -> QuadTree x a     -- ^ Quad tree to insert into
+           -> Maybe (QuadTree x a) -- ^ @Nothing@ if point not covered by tree
+insertWith combine x a (Leaf children box)
+  | box `Box.contains` x =
+      let children' =
+            case extract x children of
+              Just (y, children') -> Pair x (combine y a) : children'
+              Nothing             -> Pair x a : children
+      in Just $ subdivideIfNeeded $ Leaf children' box
   | otherwise = Nothing
-insert x a (Node quads box) =
+insertWith combine x a (Node quads box) =
   let fromJust = fromMaybe (error "insert: Uh oh")
       quads' = withQuadrantFor x box
-                 (\l -> quads & l %~ fromJust . insert x a)
+                 (\l -> quads & l %~ fromJust . insertWith combine x a)
   in fmap (\q->Node q box) quads'
+
+-- | Insert a point into a quadtree
+insert :: (Ord x, Fractional x)
+       => Point V2 x       -- ^ Point at which to insert
+       -> a                -- ^ Value to insert
+       -> QuadTree x a     -- ^ Quad tree to insert into
+       -> Maybe (QuadTree x a) -- ^ @Nothing@ if point not covered by tree
+insert x a qt = insertWith (const id) x a qt
 
 -- | Return the list of points contained in the quad tree
 toPoints :: QuadTree x a -> [Pair (Point V2 x) a]
