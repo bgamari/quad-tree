@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 
 -- Implementation note: Points sitting on edges are biased to the NE quadrant
 
@@ -94,19 +95,20 @@ lookupNearest x n@(Node {})
     | not $ (n ^. qBox) `Box.contains` x = Nothing
     | otherwise = undefined
 
--- | Apply a function to the quadrant containing the given point
-mapContainingQuadrant
-     :: (Ord x, Fractional x)
-     => (a -> a)            -- ^ The function to apply
-     -> Point V2 x          -- ^ The contained point
-     -> Box x               -- ^ The box covered by the quadrants
-     -> Quadrants a         -- ^ The quadrants themselves
-     -> Maybe (Quadrants a) -- ^ Nothing if point not in covered box
-mapContainingQuadrant f x box quads
-    | (boxes ^. qNE) `Box.contains` x = Just (quads & qNE %~ f)
-    | (boxes ^. qNW) `Box.contains` x = Just (quads & qNW %~ f)
-    | (boxes ^. qSE) `Box.contains` x = Just (quads & qSE %~ f)
-    | (boxes ^. qSW) `Box.contains` x = Just (quads & qSW %~ f)
+-- | Evaluate the given function with a lens pointing to the quadrant
+-- containing the given point (or @Nothing@ if the point is not contained
+-- within the box
+withQuadrantFor
+    :: (Ord x, Fractional x)
+    => Point V2 x
+    -> Box x
+    -> ((forall a. Lens' (Quadrants a) a) -> b)
+    -> Maybe b
+withQuadrantFor x box f
+    | (boxes ^. qNE) `Box.contains` x = Just (f qNE)
+    | (boxes ^. qNW) `Box.contains` x = Just (f qNW)
+    | (boxes ^. qSE) `Box.contains` x = Just (f qSE)
+    | (boxes ^. qSW) `Box.contains` x = Just (f qSW)
     | otherwise                      = Nothing
   where
     boxes = quadrantsOf box
@@ -123,7 +125,7 @@ subdivide (Leaf pts box) =
            -> Quadrants [Pair (Point V2 x) a]
     insert quads p@(Pair x _) =
         fromMaybe (error "subdivide: Uh oh.")
-        $ mapContainingQuadrant (p:) x box quads
+        $ withQuadrantFor x box $ \l->quads & l %~ (p:)
     sortPoints :: [Pair (Point V2 x) a] -> Quadrants [Pair (Point V2 x) a]
     sortPoints = foldl' insert (pure [])
     boxes = quadrantsOf box
@@ -152,8 +154,8 @@ insert x a (Leaf children box)
   | box `Box.contains` x = Just $ subdivideIfNeeded $ Leaf (Pair x a:children) box
   | otherwise = Nothing
 insert x a (Node quads box) =
-  let quads' = mapContainingQuadrant
-                 (fromMaybe (error "insert: Uh oh") . insert x a) x box quads
+  let quads' = withQuadrantFor x box
+                 (\l -> quads & l %~  fromMaybe (error "insert: Uh oh") . insert x a)
   in fmap (\q->Node q box) quads'
 
 -- | Return the list of points contained in the quad tree
