@@ -4,6 +4,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+-- Implementation note: Points sitting on edges are biased to the NE quadrant
+
 module Data.QuadTree
     ( Pair(..)
     , Sign(..)

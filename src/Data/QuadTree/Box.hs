@@ -16,8 +16,7 @@ import Control.Lens hiding (contains)
 import Linear
 import Linear.Affine
 
--- | An axis-aligned box closed on negative edges and open on positive
--- edges
+-- | An axis-aligned closed box
 data Box a = Box { _center :: !(Point V2 a)
                  , _halfDim :: !(V2 a)
                  }
@@ -55,6 +54,6 @@ singleton v = Box v zero
 -- | Test whether a a box contains a point
 contains :: (Num a, Ord a) => Box a -> Point V2 a -> Bool
 contains (Box (P (V2 cx cy)) (V2 hx hy)) (P (V2 x y))
-    | x < cx - hx || x >= cx + hx = False
-    | y < cy - hy || y >= cy + hy = False
+    | x < cx - hx || x > cx + hx = False
+    | y < cy - hy || y > cy + hy = False
     | otherwise = True
