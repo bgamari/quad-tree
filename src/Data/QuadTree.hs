@@ -54,6 +54,7 @@ instance Applicative Quadrants where
     Quadrants ne nw se sw <*> Quadrants ne' nw' se' sw' =
         Quadrants (ne ne') (nw nw') (se se') (sw sw')
 
+-- | The signs of the quadrants
 quadrantSigns :: Quadrants (V2 Sign)
 quadrantSigns = Quadrants { _qNE = V2 Plus  Plus  , _qNW = V2 Minus Plus
                           , _qSE = V2 Plus  Minus , _qSW = V2 Minus Minus
@@ -67,6 +68,7 @@ quadrantOf quadrant (Box c h) =
     offset = multBy <$> half <*> quadrant
     half = h ^/ 2
 
+-- | Boxes representing the quadrants of a box
 quadrantsOf :: (Fractional a) => Box a -> Quadrants (Box a)
 quadrantsOf box = quadrantOf <$> quadrantSigns <*> pure box
 
