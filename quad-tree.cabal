@@ -1,17 +1,17 @@
-name:          foo
-category:      foo
+name:          quad-tree
+category:      quad-tree
 version:       0.1
 license:       BSD3
 cabal-version: >= 1.10
 license-file:  LICENSE
-author:        Edward A. Kmett
-maintainer:    Edward A. Kmett <ekmett@gmail.com>
+author:        Ben Gamari
+maintainer:    Ben Gamari <bgamari@gmail.com
 stability:     experimental
-homepage:      http://github.com/ekmett/foo/
-bug-reports:   http://github.com/ekmett/foo/issues
-copyright:     Copyright (C) 2013 Edward A. Kmett
-synopsis:      foo
-description:   foo
+homepage:      http://github.com/bgamari/quad-tree
+bug-reports:   http://github.com/bgamari/quad-tree/issues
+copyright:     Copyright (C) 2014 Ben Gamari
+synopsis:      Quad trees are a useful data structure for lookups within two-dimensional spatial data
+description:   Quad trees are a useful data structure for lookups within two-dimensional spatial data
 build-type:    Custom
 
 extra-source-files:
@@ -34,7 +34,15 @@ library
   default-language: Haskell2010
   ghc-options: -Wall
   build-depends:
-    base >= 4.4 && < 5
+    base >= 4.4 && < 5,
+    semigroups >= 0.8 && < 1,
+    lens >= 4.2 && < 5,
+    linear >= 1.10 && < 2
+  exposed-modules:
+    Data.QuadTree
+    Data.QuadTree.Types
+    Data.QuadTree.BoundedPoints
+    Data.QuadTree.Box
 
 test-suite doctests
   type:    exitcode-stdio-1.0
