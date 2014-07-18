@@ -97,13 +97,14 @@ newWithBB bb = Leaf [] bb
 
 -- | Find a point in a quadtree
 lookup :: (Fractional x, Ord x, Eq x)
-              => Point V2 x -> QuadTree x a -> Maybe a
-lookup x (Leaf points _) =
-    lookupPair x points
-lookup x (Node quads box)
-    | not $ box `Box.contains` x = Nothing
-    | otherwise = join $ withQuadrantFor x box $ \l->
-        lookup x (quads ^. l)
+       => Point V2 x -> QuadTree x a -> Maybe a
+lookup x = go
+  where
+    go (Leaf points _) = lookupPair x points
+    go (Node quads box)
+      | not $ box `Box.contains` x = Nothing
+      | otherwise = join $ withQuadrantFor x box $ \l->
+          lookup x (quads ^. l)
 
 -- | Evaluate the given function with a lens pointing to the quadrant
 -- containing the given point (or @Nothing@ if the point is not contained
