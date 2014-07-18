@@ -9,18 +9,16 @@
 
 module Data.QuadTree
     ( Pair(..)
-    , Sign(..)
-    , Quadrants(..)
-    , qNE, qNW, qSE, qSW
-    , quadrantSigns
-      -- * Quad tree
+      -- * Quad tree type
     , QuadTree
     , qBox
+      -- * Creating and populating quad trees
     , newWithBB
-    , lookup
-    , size
     , insert
     , insertWith
+      -- * Querying quad trees
+    , lookup
+    , size
     , toPoints
     ) where
 
