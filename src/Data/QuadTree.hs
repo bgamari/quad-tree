@@ -90,6 +90,11 @@ instance Functor (QuadTree x) where
         Leaf (map (\(Pair x a)->Pair x (f a)) points) box
 
 -- | Create a new quadtree covering the given bounding-box
+--
+-- Instead of using this you may want to look at
+-- @Data.QuadTree.BoundedPoints.BoundedPoints@ which will track the
+-- bounding box of your data until you are ready to commit to a size and
+-- build the tree
 newWithBB :: Box x -> QuadTree x a
 newWithBB bb = Leaf [] bb
 
