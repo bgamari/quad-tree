@@ -5,6 +5,7 @@
 module Data.QuadTree.Types
     ( Pair (..)
     , pairTuple
+    , lookupPair
     ) where
 
 import Data.Foldable
@@ -18,3 +19,9 @@ data Pair a b = Pair !a !b
 
 pairTuple :: Iso' (Pair a b) (a, b)
 pairTuple = iso (\(Pair a b) -> (a, b)) (\(a, b) -> Pair a b)
+
+lookupPair :: Eq a => a -> [Pair a b] -> Maybe b
+lookupPair a (Pair x y:rest)
+  | a == x    = Just y
+  | otherwise = lookupPair a rest
+lookupPair _ [] = Nothing
