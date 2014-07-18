@@ -104,14 +104,19 @@ withQuadrantFor
     -> Box x
     -> ((forall a. Lens' (Quadrants a) a) -> b)
     -> Maybe b
-withQuadrantFor x box f
-    | (boxes ^. qNE) `Box.contains` x = Just (f qNE)
-    | (boxes ^. qNW) `Box.contains` x = Just (f qNW)
-    | (boxes ^. qSE) `Box.contains` x = Just (f qSE)
-    | (boxes ^. qSW) `Box.contains` x = Just (f qSW)
-    | otherwise                      = Nothing
+withQuadrantFor p@(P (V2 x y)) box f
+    | not $ box `Box.contains` p      = Nothing
+    | otherwise =
+         if x < cx
+           then if y < cy
+                  then Just (f qSW)
+                  else Just (f qNW)
+           else if y < cy
+                  then Just (f qSE)
+                  else Just (f qNE)
   where
-    boxes = quadrantsOf box
+    P (V2 cx cy) = box ^. Box.center
+{-# INLINE withQuadrantFor #-}
 
 -- | Subdivide the leaves of a given quadtree
 subdivide :: forall x a. (Ord x, Fractional x)
